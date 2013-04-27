@@ -82,9 +82,14 @@ class Localization < ActiveRecord::Base
   private
 
   def create_first_version
-    versions.build(:content => draft_content).tap do |version|
-      version.number = 1
-      version.save!
+    unless Locale.locale_permitted? locale
+      self.destroy
+    else
+      versions.build(:content => draft_content).tap do |version|
+        version.number = 1
+        version.save!
+      end
     end
   end
+
 end

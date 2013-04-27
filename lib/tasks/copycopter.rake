@@ -38,4 +38,25 @@ namespace :copycopter do
       puts "You must know the old password to the project to update to the new password."
     end
   end
+
+  desc 'Destroy localizations with locales not permitted'
+  task :destroy_localizations_not_permited => :environment do
+    Localization.delete( Localization.where("locale_id NOT IN (?)", Locale.locales_permitted) )
+    Locale.delete( Locale.where("id NOT IN (?)", Locale.locales_permitted) )
+    puts "All not permitted localizations deleted successfully!"
+  end
+
+  desc 'Purge old blurbs versions on all projects'
+  task :destroy_old_versions => :environment do
+    lates_versions = []
+    Localization.all.each do |localization|
+      if latest_version = localization.latest_version
+        lates_versions << latest_version.id
+      end
+    end
+    Version.delete( Version.where("localization_id NOT IN (SELECT id FROM localizations)") )
+    Version.delete( Version.where("id NOT IN (?)", lates_versions) )
+    puts "Old versions deleted successfully!"
+  end
+
 end
